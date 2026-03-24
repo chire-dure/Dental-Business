@@ -6,33 +6,6 @@
   <title>Cosmo Dental — Metro Manila's Most Trusted Smile Experts</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
 
-  <!--
-  ╔══════════════════════════════════════════════════════════════╗
-  ║           SECURITY ARCHITECTURE — READ BEFORE SHIPPING       ║
-  ╠══════════════════════════════════════════════════════════════╣
-  ║  1. AUTHORIZATION     → JWT-based; patient sees only their   ║
-  ║                         own appointments (row-level security) ║
-  ║  2. INPUT VALIDATION  → Type checks + DOMPurify sanitization  ║
-  ║                         on every form field (blocks XSS/SQLi) ║
-  ║  3. CORS POLICY       → Allow-Origin: cosmodentalph.com only  ║
-  ║  4. RATE LIMITING     → /api/book: 5 req/min per IP           ║
-  ║                         /api/auth: 10 req/min per IP          ║
-  ║  5. PASSWORD RESET    → Tokens expire in 15 min (single-use) ║
-  ║  6. ERROR HANDLING    → Users see clean fallbacks; raw errors  ║
-  ║                         never exposed to client               ║
-  ║  7. DB INDEXES        → Index: patient_id, appt_date,         ║
-  ║                         branch_id, email (auth lookups)       ║
-  ║  8. LOGGING           → Structured JSON logs to stdout;       ║
-  ║                         shipped to Datadog / CloudWatch        ║
-  ║  9. ALERTS            → PagerDuty on 5xx spike > 1%,          ║
-  ║                         booking form errors, auth failures    ║
-  ║  10. ROLLBACK         → Blue-green deploy; revert in < 2 min  ║
-  ╚══════════════════════════════════════════════════════════════╝
-
-  COST NOTE: Rate limiting on /api/book prevents spam bookings
-  and runaway API costs. If using email/SMS OTP confirmation,
-  set a hard cap of 1000/day and monitor via billing alert.
-  -->
 
   <style>
     /* ═══════════════════════════════════════
@@ -291,8 +264,7 @@
       font-family: 'DM Sans', sans-serif;
       outline: none; width: 100%;
       transition: border-color .2s;
-      /* SECURITY: input[type=text] will be sanitized server-side.
-         All values validated against allowed pattern before API call */
+      
     }
     .quick-form select option { background: var(--navy); }
     .quick-form select:focus,
@@ -447,15 +419,7 @@
     .booking-perk { display: flex; align-items: center; gap: 12px; }
     .booking-perk span { font-size: 14px; color: var(--navy); font-weight: 500; }
     .booking-perk-icon { font-size: 18px; }
-    /* ── BOOKING FORM ──
-       SECURITY NOTES:
-       - All inputs validated client-side (pattern, required, type)
-       - DOMPurify applied before any innerHTML use
-       - CSRF token injected server-side into hidden field
-       - POST to /api/v1/appointments with JWT Bearer token
-       - Rate limited: 5 submissions/min per IP → 429 response handled
-       - Phone number regex: /^09\d{9}$/ (PH mobile format)
-    */
+    /* ── BOOKING FORM ── */
     .booking-form-wrap {
       background: var(--white);
       border-radius: var(--radius-lg);
@@ -497,7 +461,7 @@
       font-size: 12px; color: var(--text-muted); margin-top: 12px; margin-bottom: 20px;
       display: flex; align-items: center; gap: 6px;
     }
-    .csrf-field { display: none; } /* hidden CSRF token — populated server-side */
+    .csrf-field { display: none; }
 
     /* ═══════════════════════════════════════
        TEAM
@@ -607,43 +571,6 @@
       margin-bottom: 10px;
     }
     .open-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--mint); }
-
-    /* ═══════════════════════════════════════
-       SECURITY PANEL (Developer Callout)
-       ═══════════════════════════════════════ */
-    .security-panel {
-      background: var(--navy-mid);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 80px 0;
-    }
-    .sec-header { text-align: center; margin-bottom: 56px; }
-    .sec-header h2 { font-size: 40px; color: var(--white); margin-bottom: 12px; }
-    .sec-header p { color: rgba(255,255,255,0.5); font-size: 15px; }
-    .sec-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .sec-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--radius); padding: 28px;
-    }
-    .sec-card-top {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
-    }
-    .sec-card-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: rgba(42,190,170,0.12); border: 1px solid rgba(42,190,170,0.25);
-      display: flex; align-items: center; justify-content: center; font-size: 18px;
-    }
-    .sec-card-top h4 { color: var(--white); font-size: 15px; font-weight: 600; }
-    .sec-card p { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.7; }
-    .sec-code {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px; color: var(--mint);
-      background: rgba(42,190,170,0.08); border-radius: 6px;
-      padding: 8px 12px; margin-top: 12px; line-height: 1.8;
-    }
 
     /* ═══════════════════════════════════════
        FOOTER
@@ -880,7 +807,7 @@
              pattern="[A-Za-z0-9\s,]+" maxlength="32"
              aria-label="Preferred date"
              title="Enter a preferred date" />
-      <!-- SECURITY: input sanitized before use; pattern blocks script injection -->
+      
       <a href="#book" class="btn btn-primary" style="width:100%; justify-content:center;">
         Reserve Slot →
       </a>
@@ -1071,30 +998,11 @@
         </div>
       </div>
 
-      <!--
-        BOOKING FORM
-        ─────────────────────────────────────────────
-        SECURITY IMPLEMENTATION CHECKLIST:
-        [✓] AUTHORIZATION  → form only submits when user is authenticated (JWT stored
-                             in httpOnly cookie, never localStorage)
-        [✓] INPUT VALIDATION → validateBookingForm() runs before fetch(); all inputs
-                             sanitized with DOMPurify before display
-        [✓] CORS           → fetch() sends to same origin; server rejects cross-origin
-                             requests from non-whitelisted domains
-        [✓] RATE LIMITING  → handleRateLimit() shows friendly 429 message; does NOT
-                             expose retry-after header raw to user
-        [✓] CSRF           → hidden csrf_token field populated server-side on page load;
-                             validated on POST
-        [✓] ERROR HANDLING → catch block shows friendly error; raw error never shown
-        [✓] LOGGING        → server logs appointment_attempt, appointment_success,
-                             appointment_failed with patient_id (no PII in logs)
-        ─────────────────────────────────────────────
-      -->
       <div class="booking-form-wrap" id="booking-form-wrap">
         <h3>Book an Appointment</h3>
         <p>Fill out the form below and we'll confirm your slot soon.</p>
 
-        <!-- CSRF token — populated server-side on page render -->
+        
         <input type="hidden" name="csrf_token" class="csrf-field" id="csrf_token" value="{{CSRF_TOKEN}}" />
 
         <div class="form-row">
@@ -1125,7 +1033,7 @@
                  placeholder="maria@email.com"
                  autocomplete="email"
                  aria-describedby="email-hint" />
-          <!-- server-side: validated with regex + checked against known disposable domains -->
+          
           <span class="error-msg">Please enter a valid email address</span>
         </div>
 
@@ -1136,7 +1044,7 @@
                  placeholder="09XX XXX XXXX"
                  autocomplete="tel"
                  title="Enter a valid Philippine mobile number starting with 09" />
-          <!-- regex: /^09\d{9}$/ — PH mobile format only -->
+          
           <span class="error-msg">Enter a valid PH number (09XXXXXXXXX)</span>
         </div>
 
@@ -1181,14 +1089,13 @@
                     maxlength="500"
                     placeholder="Any concerns, allergies, or special requests..."
                     aria-describedby="notes-hint"></textarea>
-          <!-- maxlength enforced client + server. Stripped of HTML server-side -->
+          
         </div>
 
         <p class="form-note">
           🔒 Your information is encrypted and only accessible to Cosmo Dental staff.
           We never share your data with third parties.
-          <!-- AUTHORIZATION NOTE: patient data is row-level secured.
-               Staff can only access patients assigned to their branch. -->
+          
         </p>
 
         <button type="button" class="btn btn-dark" style="width:100%; justify-content:center; font-size:16px; padding:18px;"
@@ -1355,7 +1262,7 @@
             </div>
             <div class="loc-info-item">
               <span class="loc-icon">✉️</span>
-              <span><a href="mailto:info@cosmodentalph.com" style="color:var(--gold); text-decoration:none;">info@cosmodentalph.com</a></span>
+              <span><a href="/cdn-cgi/l/email-protection#61080f070e21020e120c0e05040f15000d11094f020e0c" style="color:var(--gold); text-decoration:none;"><span class="__cf_email__" data-cfemail="5a33343c351a39352937353e3f342e3b362a3274393537">[email&#160;protected]</span></a></span>
             </div>
           </div>
           <div class="open-badge">Open Now</div>
@@ -1384,7 +1291,7 @@
             </div>
             <div class="loc-info-item">
               <span class="loc-icon">✉️</span>
-              <span><a href="mailto:info@cosmodentalph.com" style="color:var(--gold); text-decoration:none;">info@cosmodentalph.com</a></span>
+              <span><a href="/cdn-cgi/l/email-protection#523b3c343d12313d213f3d36373c26333e223a7c313d3f" style="color:var(--gold); text-decoration:none;"><span class="__cf_email__" data-cfemail="c7aea9a1a887a4a8b4aaa8a3a2a9b3a6abb7afe9a4a8aa">[email&#160;protected]</span></a></span>
             </div>
           </div>
           <div class="open-badge">Open Now</div>
@@ -1398,103 +1305,7 @@
   </div>
 </section>
 
-<!-- ════════════════════════════════════════
-     SECURITY ARCHITECTURE PANEL
-     (for developers / devops — hidden in prod)
-     ════════════════════════════════════════ -->
-<section class="security-panel" id="security">
-  <div class="container">
-    <div class="sec-header">
-      <div class="tag" style="color:var(--mint); justify-content:center;">Dev / Security Docs</div>
-      <h2>Security Architecture</h2>
-      <p>Implementation reference for engineering teams. Hide this section in production with a feature flag.</p>
-    </div>
-    <div class="sec-grid">
 
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🔐</div>
-          <h4>Authorization</h4>
-        </div>
-        <p>JWT stored in httpOnly, Secure, SameSite=Strict cookie. Patients can only read/write their own appointment rows. Staff scoped to their branch_id.</p>
-        <div class="sec-code">SELECT * FROM appointments<br/>WHERE patient_id = :user_id<br/>AND branch_id = :user_branch;</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🧪</div>
-          <h4>Input Validation</h4>
-        </div>
-        <p>All form inputs validated client-side (pattern, type, maxlength) AND server-side. HTML stripped with DOMPurify. Parameterized queries only — no string concatenation in SQL.</p>
-        <div class="sec-code">// Phone: /^09\d{9}$/<br/>// Email: RFC 5321 regex<br/>// Name: /^[A-Za-zÀ-ÿ\s\-]+$/</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🌐</div>
-          <h4>CORS Policy</h4>
-        </div>
-        <p>Server allows only cosmodentalph.com origin. Preflight OPTIONS handled. Credentials flag enabled only for same-origin requests.</p>
-        <div class="sec-code">Access-Control-Allow-Origin:<br/>  https://cosmodentalph.com<br/>Access-Control-Allow-Credentials: true</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🚦</div>
-          <h4>Rate Limiting</h4>
-        </div>
-        <p>Express-rate-limit: /api/book → 5 req/min/IP. /api/auth → 10 req/min/IP. Returns 429 + Retry-After header. Frontend shows friendly message (not raw 429).</p>
-        <div class="sec-code">// Cost protection: email/SMS cap<br/>// Hard limit: 1000 OTPs/day<br/>// Alert at 80% threshold</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🔑</div>
-          <h4>Password Reset Security</h4>
-        </div>
-        <p>Tokens are cryptographically random (32 bytes). Expire in 15 minutes. Single-use — invalidated on click. No user enumeration (same response for existing/non-existing emails).</p>
-        <div class="sec-code">crypto.randomBytes(32).toString('hex')<br/>expires_at: NOW() + INTERVAL 15 min<br/>used: false → true on first use</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">⚠️</div>
-          <h4>Error Handling</h4>
-        </div>
-        <p>Frontend catch blocks show friendly messages only. Stack traces and DB errors never reach the client. All errors logged server-side with request_id for tracing.</p>
-        <div class="sec-code">catch(err) {<br/>  log.error({err, request_id})<br/>  res.status(500).json({<br/>    message: "Something went wrong"<br/>  })<br/>}</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🗄️</div>
-          <h4>Database Indexes</h4>
-        </div>
-        <p>Index all frequently queried fields to keep appointment lookups fast as data grows.</p>
-        <div class="sec-code">CREATE INDEX idx_appt_patient<br/>  ON appointments(patient_id);<br/>CREATE INDEX idx_appt_date<br/>  ON appointments(appt_date);<br/>CREATE INDEX idx_user_email<br/>  ON users(email);</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">📋</div>
-          <h4>Logging & Alerts</h4>
-        </div>
-        <p>Structured JSON logs to stdout → CloudWatch / Datadog. PagerDuty alert on: 5xx rate &gt;1%, booking failures &gt;5/min, auth failures &gt;20/min.</p>
-        <div class="sec-code">log.info({ event: 'appt_booked',<br/>  patient_id, branch, service,<br/>  timestamp: new Date().toISOString() })</div>
-      </div>
-
-      <div class="sec-card">
-        <div class="sec-card-top">
-          <div class="sec-card-icon">🔄</div>
-          <h4>Rollback Strategy</h4>
-        </div>
-        <p>Blue-green deployment on Railway / Render. DNS switch takes &lt;2 min. DB migrations are always backward-compatible. Rollback runbook in Notion, reviewed quarterly.</p>
-        <div class="sec-code">// Feature flags via env vars<br/>// BOOKING_ENABLED=true/false<br/>// Revert: git revert + push to prod</div>
-      </div>
-
-    </div>
-  </div>
-</section>
 
 <!-- ════════════════════════════════════════
      FOOTER
@@ -1511,7 +1322,7 @@
         <div class="footer-socials">
           <a href="https://www.facebook.com/cosmodentalph/" target="_blank" rel="noopener" class="footer-social" aria-label="Facebook">📘</a>
           <a href="https://www.instagram.com/cosmodentalph/" target="_blank" rel="noopener" class="footer-social" aria-label="Instagram">📸</a>
-          <a href="mailto:info@cosmodentalph.com" class="footer-social" aria-label="Email">✉️</a>
+          <a href="/cdn-cgi/l/email-protection#dfb6b1b9b09fbcb0acb2b0bbbab1abbeb3afb7f1bcb0b2" class="footer-social" aria-label="Email">✉️</a>
         </div>
       </div>
       <div class="footer-col">
@@ -1532,7 +1343,7 @@
           <li><a href="#testimonials">Patient Reviews</a></li>
           <li><a href="#locations">Our Locations</a></li>
           <li><a href="#book">Book Appointment</a></li>
-          <li><a href="mailto:info@cosmodentalph.com">Contact Us</a></li>
+          <li><a href="/cdn-cgi/l/email-protection#3c55525a537c5f534f5153585952485d504c54125f5351">Contact Us</a></li>
         </ul>
       </div>
       <div class="footer-col">
@@ -1540,7 +1351,7 @@
         <ul>
           <li><a href="tel:09171682289">Makati: 0917 168 2289</a></li>
           <li><a href="tel:09686212551">QC: 0968 621 2551</a></li>
-          <li><a href="mailto:info@cosmodentalph.com">info@cosmodentalph.com</a></li>
+          <li><a href="/cdn-cgi/l/email-protection#9bf2f5fdf4dbf8f4e8f6f4fffef5effaf7ebf3b5f8f4f6"><span class="__cf_email__" data-cfemail="7a13141c153a19150917151e1f140e1b160a1254191517">[email&#160;protected]</span></a></li>
           <li><a href="https://www.facebook.com/cosmodentalph/" target="_blank">Message on Facebook</a></li>
         </ul>
       </div>
@@ -1567,13 +1378,13 @@
   </div>
 </div>
 
-<!-- Rate limit / error toast -->
+
 <div class="toast" id="toast">⚠️ <span id="toast-msg">Too many requests. Please wait a moment.</span></div>
 
 <!-- ════════════════════════════════════════
      JAVASCRIPT
      ════════════════════════════════════════ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   /* ─── NAV SCROLL BEHAVIOR ─── */
   const nav = document.getElementById('main-nav');
   window.addEventListener('scroll', () => {
@@ -1594,12 +1405,6 @@
     alert('Mobile menu — implement drawer/offcanvas here.');
   }
 
-  /* ════════════════════════════════════════
-     FORM VALIDATION
-     ════════════════════════════════════════
-     SECURITY: Validates all fields client-side.
-     Server MUST re-validate — never trust client.
-  */
   function validateBookingForm() {
     const fields = [
       { id: 'fname',    pattern: /^[A-Za-zÀ-ÿ\s\-]{1,50}$/ },
@@ -1639,17 +1444,6 @@
     return valid;
   }
 
-  /* ════════════════════════════════════════
-     BOOKING SUBMISSION
-     SECURITY IMPLEMENTATION:
-     - Validates before fetch
-     - Reads CSRF token from hidden field
-     - Sends JWT from httpOnly cookie automatically (credentials:'include')
-     - Handles 429 (rate limit) with friendly message
-     - Handles 401 (auth) → redirect to login
-     - Catch block shows generic message (never raw error)
-     - Logs attempt to console in dev only
-  ════════════════════════════════════════ */
   let bookingSubmitCount = 0;
   const MAX_CLIENT_ATTEMPTS = 5;
 
@@ -1686,7 +1480,7 @@
       csrf_token:       csrfToken,
     };
 
-    // DEV ONLY logging — remove in production or gate behind isDev flag
+    // DEV ONLY — remove in production
     if (window.location.hostname === 'localhost') {
       console.log('[DEV] Booking payload:', { ...payload, email: '***REDACTED***' });
     }
@@ -1695,8 +1489,6 @@
       /* PRODUCTION: replace URL with real API endpoint
          POST /api/v1/appointments
          Headers: Content-Type: application/json
-         Credentials: 'include' → sends httpOnly JWT cookie automatically
-         Server validates CSRF token, JWT, re-validates all fields
       */
       // SIMULATED RESPONSE (remove in production):
       await new Promise(r => setTimeout(r, 1200)); // simulate network
@@ -1706,7 +1498,7 @@
       const response = await fetch('/api/v1/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',  // sends httpOnly cookie
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
       if (response.status === 429) {
@@ -1732,9 +1524,7 @@
       }
 
     } catch (err) {
-      // SECURITY: Raw error message never shown to user
-      // Internal logging only:
-      console.error('[Booking Error - not shown to user]', err.message);
+            console.error('[Booking Error - not shown to user]', err.message);
       showError('Something went wrong on our end. Please try again or call us directly.');
     } finally {
       btn.textContent = '📅 Confirm My Appointment';
@@ -1742,9 +1532,7 @@
     }
   }
 
-  /* ─── SANITIZE (basic — use DOMPurify in production) ─── */
   function sanitize(str) {
-    // In production: return DOMPurify.sanitize(str, { ALLOWED_TAGS: [] })
     return str
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -1797,23 +1585,3 @@
   });
 
   /*
-  ════════════════════════════════════════════════════════
-  ALERT & MONITORING NOTE (for DevOps / Engineering)
-  ════════════════════════════════════════════════════════
-  Set up alerts for:
-  1. 5xx error rate > 1% over 5 min → PagerDuty P1
-  2. Booking form 422 errors > 10/min → Slack #alerts
-  3. Auth failures (401/403) > 20/min → Slack #security
-  4. Email/SMS OTP > 800/day → email billing alert
-  5. DB query time p95 > 500ms → Datadog monitor
-
-  ROLLBACK:
-  - Blue-green on Railway: flip DNS in 90s
-  - Feature flag: BOOKING_ENABLED=false disables submit
-  - DB: all migrations must be reversible (no DROP, only ADD)
-  - Runbook: /docs/runbooks/booking-rollback.md
-  ════════════════════════════════════════════════════════
-  */
-</script>
-</body>
-</html>
